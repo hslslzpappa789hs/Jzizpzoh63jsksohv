@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cord floodeur pro de tony1337</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body::before {
+      content: "";
+      background: url('uhq.png') no-repeat center center fixed;
+      background-size: cover;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: -1;
+      opacity: 1;
+    }
+
+    body {
+      font-family: monospace;
+      color: #f90000;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #topRightLabel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    #sidebar {
+      width: 260px;
+      background: rgba(17, 17, 17, 0.95);
+      padding: 10px;
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    #sidebar input, #sidebar button {
+      width: 100%;
+      background: rgba(26, 26, 26, 0.9);
+      color: #ff0404;
+      border: none;
+      padding: 8px;
+      font-family: monospace;
+    }
+
+    #sidebar button {
+      background: #333;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    #sidebar button:hover {
+      background: #444;
+    }
+
+    .group {
+      font-weight: bold;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #333;
+      color: #ff5959;
+    }
+
+    .scroll-list {
+      list-style: none;
+      max-height: 120px;
+      overflow-y: auto;
+      background: rgba(26, 26, 26, 0.7);
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 4px;
+    }
+
+    .scroll-list li {
+      padding: 6px 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #222;
+      transition: background 0.2s;
+    }
+
+    .scroll-list li:hover {
+      background: #222;
+    }
+
+    .scroll-list li:last-child {
+      border-bottom: none;
+    }
+
+    #mainContainer {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    #chatHeader {
+      background: rgba(34, 34, 34, 0.9);
+      padding: 10px;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+      position: relative;
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      background: rgba(26, 26, 26, 0.9);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #inputBox {
+      background: rgba(17, 17, 17, 0.9);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-top: 1px solid #333;
+    }
+
+    input, textarea, button {
+      background: rgba(26, 26, 26, 0.9);
+      color: #ff0404;
+      border: none;
+      padding: 8px;
+      font-family: monospace;
+    }
+
+    textarea {
+      height: 60px;
+      resize: none;
+    }
+
+    button {
+      background: #333;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #444;
+    }
+
+    .message {
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .username {
+      color: #ff5959;
+      font-weight: bold;
+    }
+
+    #chatpackControls {
+      display: flex;
+      gap: 6px;
+    }
+
+    #chatpackControls button {
+      flex: 1;
+      font-size: 12px;
+      padding: 6px;
+    }
+
+    #floodControls {
+      background: #222;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #ccc;
+    }
+
+    #floodControls input[type="range"] {
+      width: 100%;
+      margin: 4px 0;
+    }
+
+    /* Style pour la case Auto # + MAJ */
+    #autoHashUpperLabel {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #ff5959;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #autoHashUpperLabel input[type="checkbox"] {
+      accent-color: #ff0404;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <aside id="sidebar">
+    <input id="token" type="text" placeholder="Token Dc @uhq333" oninput="connect()" />
+    <button onclick="loadGuilds()">Serveurs</button>
+    <button onclick="loadDMs()">DMs / Groupes</button>
+    <button onclick="send_Tiny_Mode()">flood super og</button>
+
+    <div class="group">Serveurs</div>
+    <ul id="guildList" class="scroll-list"></ul>
+
+    <div class="group">DMs & Groupes</div>
+    <ul id="dmList" class="scroll-list"></ul>
+
+    <div class="group">Salons</div>
+    <ul id="channelList" class="scroll-list"></ul>
+  </aside>
+
+  <main id="mainContainer">
+    <header id="chatHeader">
+      <span id="chatTitle">Aucune conversation</span>
+      <div id="topRightLabel">@ made by z</div>
+    </header>
+
+    <section id="chat"></section>
+
+    <footer id="inputBox">
+      <!-- NOUVELLE OPTION : Auto # + MAJ -->
+      <div id="autoHashUpperLabel">
+        <input type="checkbox" id="autoHashUpper" />
+        <label for="autoHashUpper">Auto # + MAJ</label>
+      </div>
+
+      <div id="floodControls" style="display: none;">
+        <label>Vitesse: <span id="delayValue">50</span>ms</label>
+        <input type="range" id="delayRange" min="0" max="500" value="50">
+      </div>
+
+      <div id="chatpackControls">
+        <button id="chatpackBtn">ChatPack</button>
+        <button id="sendChatpackBtn">Envoyer Pack</button>
+      </div>
+      <input type="file" id="chatpackFile" accept=".txt" style="display: none;">
+
+      <input id="mentions" type="text" placeholder="Mentions (ex: @everyone <@id>)" />
+      <textarea id="message" placeholder="Message..."></textarea>
+      <button id="togglePauseBtn">Pause envoi</button>
+    </footer>
+  </main>
+
+  <script>
+    let token = '';
+    let currentDelay = 50;
+    let currentChannelId = null;
+    let socket = null;
+    let userId = null;
+    let heartbeatInterval = null;
+    let pauseEnvoi = false;
+    let chatpackLines = [];
+
+    const togglePauseBtn = document.getElementById('togglePauseBtn');
+    const messageBox = document.getElementById('message');
+    const mentionsBox = document.getElementById('mentions');
+    const chatpackBtn = document.getElementById('chatpackBtn');
+    const sendChatpackBtn = document.getElementById('sendChatpackBtn');
+    const chatpackFile = document.getElementById('chatpackFile');
+
+    // --- FONCTION DE TRANSFORMATION ---
+    function transformMessage(content) {
+      const checkbox = document.getElementById('autoHashUpper');
+      if (checkbox.checked && content.trim()) {
+        return '# ' + content.toUpperCase().trim();
+      }
+      return content.trim();
+    }
+
+    // --- ChatPack ---
+    chatpackBtn.onclick = () => chatpackFile.click();
+
+    chatpackFile.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        chatpackLines = event.target.result.split(/\r?\n/).filter(l => l.trim());
+        alert(`${chatpackLines.length} lignes chargées !`);
+      };
+      reader.readAsText(file);
+    };
+
+    sendChatpackBtn.onclick = async () => {
+      if (!currentChannelId || !token) return alert("Choisis un salon !");
+      if (chatpackLines.length === 0) return alert("Aucun ChatPack chargé !");
+
+      for (const line of chatpackLines) {
+        if (pauseEnvoi) break;
+        if (!line.trim()) continue;
+
+        const transformed = transformMessage(line);
+        const full = transformed + (mentionsBox.value.trim() ? ' ' + mentionsBox.value.trim() : '');
+
+        appendMessage("Vous", full);
+        await realSendMessage(transformed, mentionsBox.value.trim());
+        await new Promise(res => setTimeout(res, currentDelay));
+      }
+      if (!pauseEnvoi) alert("ChatPack terminé !");
+    };
+
+    togglePauseBtn.onclick = () => {
+      pauseEnvoi = !pauseEnvoi;
+      togglePauseBtn.textContent = pauseEnvoi ? "Reprendre" : "Pause envoi";
+    };
+
+    messageBox.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // --- Connexion ---
+    async function connect() {
+      token = document.getElementById('token').value.trim();
+      if (!token) return;
+
+      try {
+        const user = await fetch('https://discord.com/api/v10/users/@me', {
+          headers: { Authorization: token }
+        }).then(r => r.json());
+
+        if (user.message) throw new Error("Token invalide");
+
+        userId = user.id;
+
+        if (socket) socket.close();
+        socket = new WebSocket('wss://gateway.discord.gg/?v=9&encoding=json');
+
+        socket.onopen = () => {
+          socket.send(JSON.stringify({
+            op: 2,
+            d: { token, intents: 32767, properties: { $os: "Windows", $browser: "Chrome", $device: "desktop" }}
+          }));
+        };
+
+        socket.onmessage = ({ data }) => {
+          const p = JSON.parse(data);
+          if (p.op === 10) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = setInterval(() => {
+              if (socket?.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ op: 1, d: null }));
+              }
+            }, p.d.heartbeat_interval);
+          }
+          if (p.op === 0 && p.t === 'MESSAGE_CREATE') {
+            const msg = p.d;
+            if (msg.channel_id === currentChannelId && msg.author.id !== userId) {
+              appendMessage(msg.author.username, msg.content);
+            }
+          }
+        };
+      } catch (err) {
+        alert("Token invalide ou erreur de connexion");
+        console.error(err);
+      }
+    }
+
+    // --- Chargement des listes ---
+    async function loadGuilds() {
+      const guilds = await fetch('https://discord.com/api/v9/users/@me/guilds', {
+        headers: { Authorization: token }
+      }).then(r => r.json());
+
+      const list = document.getElementById('guildList');
+      list.innerHTML = '';
+      document.getElementById('channelList').innerHTML = '';
+
+      guilds.forEach(g => {
+        const li = document.createElement('li');
+        li.textContent = g.name;
+        li.onclick = () => loadChannels(g.id, g.name);
+        list.appendChild(li);
+      });
+    }
+
+    async function loadChannels(guildId, guildName) {
+      const channels = await fetch(`https://discord.com/api/v9/guilds/${guildId}/channels`, {
+        headers: { Authorization: token }
+      }).then(r => r.json());
+
+      const list = document.getElementById('channelList');
+      list.innerHTML = '';
+
+      channels.filter(c => c.type === 0).forEach(ch => {
+        const li = document.createElement('li');
+        li.textContent = `#${ch.name}`;
+        li.onclick = () => openChannel(ch.id, `${guildName} / #${ch.name}`);
+        list.appendChild(li);
+      });
+    }
+
+    async function loadDMs() {
+      const dms = await fetch('https://discord.com/api/v9/users/@me/channels', {
+        headers: { Authorization: token }
+      }).then(r => r.json());
+
+      const list = document.getElementById('dmList');
+      list.innerHTML = '';
+
+      dms.forEach(dm => {
+        const name = dm.recipients?.map(u => u.username).join(', ') || dm.name || 'Groupe';
+        const li = document.createElement('li');
+        li.textContent = name;
+        li.onclick = () => openChannel(dm.id, name);
+        list.appendChild(li);
+      });
+    }
+
+    function openChannel(id, label) {
+      currentChannelId = id;
+      document.getElementById('chatTitle').textContent = label;
+      document.getElementById('floodControls').style.display = 'block';
+      loadMessages();
+    }
+
+    async function loadMessages() {
+      const messages = await fetch(`https://discord.com/api/v9/channels/${currentChannelId}/messages?limit=50`, {
+        headers: { Authorization: token }
+      }).then(r => r.json());
+
+      const chat = document.getElementById('chat');
+      chat.innerHTML = '';
+      messages.reverse().forEach(msg => {
+        const author = msg.author.id === userId ? 'Vous' : msg.author.username;
+        appendMessage(author, msg.content);
+      });
+    }
+
+    function appendMessage(author, content) {
+      const chat = document.getElementById('chat');
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<span class="username">${author}:</span> ${content.replace(/\n/g, '<br>')}`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendMessage() {
+      let content = messageBox.value;
+      const mentions = mentionsBox.value.trim();
+      if (!content || !currentChannelId) return;
+
+      content = transformMessage(content);
+      const full = content + (mentions ? ' ' + mentions : '');
+
+      appendMessage('Vous', full);
+      realSendMessage(content, mentions);
+      messageBox.value = '';
+    }
+
+    async function realSendMessage(content, mentions) {
+      const full = content + (mentions ? ' ' + mentions : '');
+      try {
+        await fetch(`https://discord.com/api/v9/channels/${currentChannelId}/messages`, {
+          method: 'POST',
+          headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: full })
+        });
+      } catch (err) {
+        console.error("Erreur envoi:", err);
+      }
+    }
+
+    // --- Délai ---
+    function updateDelay() {
+      const range = document.getElementById('delayRange');
+      const value = document.getElementById('delayValue');
+      currentDelay = parseInt(range.value);
+      value.textContent = currentDelay;
+    }
+
+    document.getElementById('delayRange')?.addEventListener('input', updateDelay);
+
+    // --- Tiny Mode avec transformation ---
+    function send_Tiny_Mode() {
+      if (!currentChannelId) return alert("Choisis un salon !");
+      const msg = transformMessage("Tony MODE ACTIVÉ OG FLOOD");
+      appendMessage("Vous", msg);
+      realSendMessage(msg, "");
+      alert("flood super og activé (avec # + MAJ si coché)");
+    }
+  </script>
+</body>
+</html>
